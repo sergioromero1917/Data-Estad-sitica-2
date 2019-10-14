@@ -1,0 +1,98 @@
+```{r}
+#Petroleo
+#Reservas encontradas de petroleo
+library(htmltab)
+oilfound_link="https://www.cia.gov/library/publications/the-world-factbook/fields/264rank.html"
+oilfound_path='//*[@id="rankOrder"]'
+oilfound=htmltab(doc=oilfound_link,which=oilfound_path)
+#Exportacion de petroleo
+library(htmltab)
+oilexport_link="https://www.cia.gov/library/publications/the-world-factbook/fields/262rank.html"
+oilexport_path='//*[@id="rankOrder"]'
+oilexport=htmltab(doc=oilexport_link,which=oilexport_path)
+```
+
+```{r}
+#Importacion armas
+library(rio)
+dataarms="https://github.com/Joaquin18Araujo2034/Estadistica2/raw/master/Data_Extract_From_World_Development_Indicators.xlsx"
+armsimport=import(dataarms)
+```
+
+```{r}
+#Militar
+#Gastos militares del PBI por país [BBDD CIA]:
+library(htmltab)
+pbi_militar= "https://www.cia.gov/library/publications/the-world-factbook/fields/330rank.html"
+path_militar= '//*[@id="rankOrder"]'
+militar= htmltab(doc=pbi_militar, which=path_militar)
+```
+
+```{r}
+#Economico
+#Impuestos y otros Ingresos
+tax_link= "https://www.cia.gov/library/publications/the-world-factbook/fields/225rank.html"
+tax_path= '//*[@id="rankOrder"]'
+tax= htmltab (doc= tax_link, which= tax_path)
+```
+
+```{r}
+#Politico
+#Indice de Democracia
+demolink= "https://en.wikipedia.org/wiki/Democracy_Index"
+demopath= '//*[@id="mw-content-text"]/div/table[2]'
+demo_index= htmltab (doc= demolink, which= demopath)
+```
+
+```{r}
+#Limpieza Reservas encontradas de petroleo
+oilfound$Rank=NULL
+oilfound$`Date of Information`=NULL
+names(oilfound)[names(oilfound)=="(bbl)"]="Barrels"
+oilfound$Barrels=gsub("[,]","",oilfound$Barrels)
+oilfound$Barrels=as.numeric(oilfound$Barrels)
+str(oilfound)
+```
+```{r}
+#Limpieza Exportacion de Petroleo
+oilexport$Rank=NULL
+oilexport$`Date of Information`=NULL
+names(oilexport)[names(oilexport)=="(bbl/day)"]="Barrels by day exported"
+oilexport$`Barrels by day exported`=gsub("[,]","",oilexport$`Barrels by day exported`)
+oilexport$`Barrels by day exported`=as.numeric(oilexport$`Barrels by day exported`)
+str(oilexport)
+```
+```{r}
+#Limpieza importacion de armas
+names(armsimport)[names(armsimport)=="Country Name"]="Country"
+names(armsimport)[names(armsimport)=="2018 [YR2018]"]="Arms import value 2018"
+armsimport$`Arms import value 2018`=as.numeric(armsimport$`Arms import value 2018`)
+armsimport=armsimport[-c(218:264),]
+str(armsimport)
+```
+```{r}
+#Limpieza gastos militares
+militar$Rank=NULL
+militar$`Date of Information`=NULL
+names(militar)[names(militar)=="(% of GDP)"]="Military spending as percentage of GDP"
+militar$`Military spending as percentage of GDP`=as.numeric(militar$`Military spending as percentage of GDP`)
+str(militar)
+```
+```{r}
+#Limpieza para Impuestos 
+tax$Rank=NULL
+tax$`Date of Information`=NULL
+names(tax)[names(tax)=="(% (of GDP))"]="Taxes as percentage of GDP"
+tax$`Taxes as percentage of GDP`=as.numeric(tax$`Taxes as percentage of GDP`)
+str(tax)
+```
+```{r}
+#Limpieza para Indice Democracia
+library(stringr)
+names(demo_index)=str_split(names(demo_index),">>",simplify = T)[,1]
+names(demo_index)=gsub("Â","",names(demo_index))
+demo_index$`Country `=gsub("Â","",demo_index$`Country `)
+demo_index=demo_index[,-c(1)]
+demo_index[,-c(1,8,9)]=lapply(demo_index[,-c(1,8,9)], as.numeric)
+demo_index$`Country `=trimws(demo_index$`Country `,whitespace = "[\\h\\v]")
+str(demo_index)
